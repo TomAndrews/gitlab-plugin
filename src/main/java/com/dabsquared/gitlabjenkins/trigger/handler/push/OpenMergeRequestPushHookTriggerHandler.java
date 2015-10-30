@@ -44,9 +44,11 @@ class OpenMergeRequestPushHookTriggerHandler implements PushHookTriggerHandler {
     private final static Logger LOGGER = Logger.getLogger(OpenMergeRequestPushHookTriggerHandler.class.getName());
 
     private final boolean skipWorkInProgressMergeRequest;
+    private final String mrSkipUsers;
 
-    OpenMergeRequestPushHookTriggerHandler(boolean skipWorkInProgressMergeRequest) {
+    OpenMergeRequestPushHookTriggerHandler(boolean skipWorkInProgressMergeRequest, String mrSkipUsers) {
         this.skipWorkInProgressMergeRequest = skipWorkInProgressMergeRequest;
+        this.mrSkipUsers = mrSkipUsers;
     }
 
     @Override
@@ -91,6 +93,12 @@ class OpenMergeRequestPushHookTriggerHandler implements PushHookTriggerHandler {
         Boolean workInProgress = mergeRequest.getWorkInProgress();
         if (skipWorkInProgressMergeRequest && workInProgress != null && workInProgress) {
             LOGGER.log(Level.INFO, "Skip WIP Merge Request #{0} ({1})", toArray(mergeRequest.getIid(), mergeRequest.getTitle()));
+            return;
+        }
+        
+        String username = mergeRequest.getAuthor().getUsername();
+        if((mrSkipUsers + ",").contains(username + ",")) {
+            LOGGER.log(Level.INFO, "Skipping MR " + mergeRequest.getTitle() + " due to excluded author " + username + ".");
             return;
         }
 

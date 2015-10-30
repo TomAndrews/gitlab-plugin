@@ -75,6 +75,7 @@ public class GitLabPushTrigger extends Trigger<Job<?, ?>> {
     private boolean triggerOnPush = true;
     private boolean triggerOnMergeRequest = true;
     private final TriggerOpenMergeRequest triggerOpenMergeRequestOnPush;
+    private final String mrSkipUsers;
     private boolean triggerOnNoteRequest = true;
     private final String noteRegex;
     private boolean ciSkip = true;
@@ -102,7 +103,7 @@ public class GitLabPushTrigger extends Trigger<Job<?, ?>> {
 
     @DataBoundConstructor
     @GeneratePojoBuilder(intoPackage = "*.builder.generated", withFactoryMethod = "*")
-    public GitLabPushTrigger(boolean triggerOnPush, boolean triggerOnMergeRequest, TriggerOpenMergeRequest triggerOpenMergeRequestOnPush,
+    public GitLabPushTrigger(boolean triggerOnPush, boolean triggerOnMergeRequest, TriggerOpenMergeRequest triggerOpenMergeRequestOnPush, String mrSkipUsers, 
                              boolean triggerOnNoteRequest, String noteRegex, boolean skipWorkInProgressMergeRequest, boolean ciSkip,
                              boolean setBuildDescription, boolean addNoteOnMergeRequest, boolean addCiMessage, boolean addVoteOnMergeRequest,
                              boolean acceptMergeRequestOnSuccess, BranchFilterType branchFilterType,
@@ -110,6 +111,7 @@ public class GitLabPushTrigger extends Trigger<Job<?, ?>> {
                              MergeRequestLabelFilterConfig mergeRequestLabelFilterConfig, String secretToken) {
         this.triggerOnPush = triggerOnPush;
         this.triggerOnMergeRequest = triggerOnMergeRequest;
+        this.mrSkipUsers = mrSkipUsers;
         this.triggerOnNoteRequest = triggerOnNoteRequest;
         this.noteRegex = noteRegex;
         this.triggerOpenMergeRequestOnPush = triggerOpenMergeRequestOnPush;
@@ -187,6 +189,10 @@ public class GitLabPushTrigger extends Trigger<Job<?, ?>> {
     public boolean getTriggerOnMergeRequest() {
         return triggerOnMergeRequest;
     }
+    
+    public String getMrSkipUsers() {
+        return mrSkipUsers;
+    }
 
     public boolean getTriggerOnNoteRequest() {
         return triggerOnNoteRequest;
@@ -252,9 +258,9 @@ public class GitLabPushTrigger extends Trigger<Job<?, ?>> {
     }
 
     private void initializeTriggerHandler() {
-        mergeRequestHookTriggerHandler = newMergeRequestHookTriggerHandler(triggerOnMergeRequest, triggerOpenMergeRequestOnPush, skipWorkInProgressMergeRequest);
+        mergeRequestHookTriggerHandler = newMergeRequestHookTriggerHandler(triggerOnMergeRequest, triggerOpenMergeRequestOnPush, skipWorkInProgressMergeRequest, mrSkipUsers);
         noteHookTriggerHandler = newNoteHookTriggerHandler(triggerOnNoteRequest, noteRegex);
-        pushHookTriggerHandler = newPushHookTriggerHandler(triggerOnPush, triggerOpenMergeRequestOnPush, skipWorkInProgressMergeRequest);
+        pushHookTriggerHandler = newPushHookTriggerHandler(triggerOnPush, triggerOpenMergeRequestOnPush, skipWorkInProgressMergeRequest, mrSkipUsers);
     }
 
     private void initializeBranchFilter() {

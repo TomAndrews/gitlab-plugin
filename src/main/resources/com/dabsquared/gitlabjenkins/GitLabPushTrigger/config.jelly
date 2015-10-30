@@ -9,6 +9,9 @@
       <f:entry title="Merge Request Events" field="triggerOnMergeRequest">
         <f:checkbox default="true"/>
       </f:entry>
+      <f:entry title="Skip building merge requests for these users:">
+        <f:textbox field="mrSkipUsers"/>
+      </f:entry>
       <f:entry title="Rebuild open Merge Requests" field="triggerOpenMergeRequestOnPush">
         <f:select/>
       </f:entry>

@@ -33,10 +33,12 @@ class MergeRequestHookTriggerHandlerImpl extends AbstractWebHookTriggerHandler<M
 
     private final List<State> allowedStates;
     private final boolean skipWorkInProgressMergeRequest;
+    private final String mrSkipUsers;
 
-    MergeRequestHookTriggerHandlerImpl(List<State> allowedStates, boolean skipWorkInProgressMergeRequest) {
+    MergeRequestHookTriggerHandlerImpl(List<State> allowedStates, boolean skipWorkInProgressMergeRequest, String mrSkipUsers) {
         this.allowedStates = allowedStates;
         this.skipWorkInProgressMergeRequest = skipWorkInProgressMergeRequest;
+        this.mrSkipUsers = mrSkipUsers;
     }
 
     @Override
@@ -45,6 +47,7 @@ class MergeRequestHookTriggerHandlerImpl extends AbstractWebHookTriggerHandler<M
         if (allowedStates.contains(objectAttributes.getState())
             && isLastCommitNotYetBuild(job, hook)
             && isNotSkipWorkInProgressMergeRequest(objectAttributes)
+            && isNotMrSkipUser(objectAttributes, hook)
             && mergeRequestLabelFilter.isMergeRequestAllowed(hook.getObjectAttributes().getLabels())) {
             super.handle(job, hook, ciSkip, branchFilter, mergeRequestLabelFilter);
         }
@@ -144,6 +147,15 @@ class MergeRequestHookTriggerHandlerImpl extends AbstractWebHookTriggerHandler<M
         Boolean workInProgress = objectAttributes.getWorkInProgress();
         if (skipWorkInProgressMergeRequest && workInProgress != null && workInProgress) {
             LOGGER.log(Level.INFO, "Skip WIP Merge Request #{0} ({1})", toArray(objectAttributes.getIid(), objectAttributes.getTitle()));
+            return false;
+        }
+        return true;
+    }
+    
+    private boolean isNotMrSkipUser(MergeRequestObjectAttributes objectAttributes, MergeRequestHook hook) {
+        String username = hook.getUser().getUsername();
+        if((mrSkipUsers + ",").contains(username + ",")) {
+            LOGGER.log(Level.INFO, "Skipping MR " + objectAttributes.getTitle() + " due to excluded author " + username + ".");
             return false;
         }
         return true;
